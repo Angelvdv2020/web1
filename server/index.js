@@ -260,6 +260,7 @@ const domainSwapPairs = [
 ];
 
 
+
 const ruTextReplacements = [
   ['Pricing', 'Цены'],
   ['Features', 'Возможности'],
@@ -327,10 +328,12 @@ const localizeHtml = (html) => {
   // Force external wp-content/wp-includes assets to local files.
   out = out
     .replace(
+      /https?:\/\/(?:www\.)?(?:app\.noryxvpn\.store|noryxvpn\.store|app\.zgproxy\.org|zgproxy\.org|app\.zoogvpn\.com|zoogvpn\.com|(?:www\.)?zoogvpn\.net|zgnet\.vip)\/[^"'<>\\s)]+/gi,
+
       /https?:\/\/(?:www\.)?(?:app\.noryxvpn\.store|noryxvpn\.store|app\.zgproxy\.org|zgproxy\.org|app\.zoogvpn\.com|zoogvpn\.com|(?:www\.)?zoogvpn\.net|zgnet\.vip)\/[^"'<>\\\s)]+/gi,
       (urlValue) => rewriteAssetUrlToLocal(urlValue),
     )
-    .replace(/\/(?:wp-content|wp-includes)\/[^"'<>\\\s)]+/gi, (urlValue) => rewriteAssetUrlToLocal(urlValue));
+    .replace(/\/(?:wp-content|wp-includes)\/[^"'<>\\s)]+/gi, (urlValue) => rewriteAssetUrlToLocal(urlValue));
 
   // Brand name replacements.
   out = out
@@ -339,6 +342,13 @@ const localizeHtml = (html) => {
     .replace(/zoogvpn/g, 'noryxvpn')
     .replace(/Zoog/g, 'Noryx')
     .replace(/zoog/g, 'noryx');
+
+  // Contact/payment adjustments only.
+  out = out
+    .replace(/https?:\/\/app\.noryxvpn\.store\/checkout(?:-[^"'<>\s]*)?(?:\?[^"'<>\s]*)?/gi, 'https://noryxvpn.store/pricing/')
+    .replace(/\/checkout(?:-[^"'<>\s]*)?(?:\?[^"'<>\s]*)?/gi, '/pricing/')
+    .replace(/https?:\/\/t\.me\/(?:zoogvpn_support_team_bot|noryxvpn_support_team_bot)/gi, 'https://t.me/NoryxWebBot')
+    .replace(/<h4 class="info__name">[^<]*<\/h4>/gi, '<h4 class="info__name">Noryx Support</h4>');
 
   // Keep only Russian locale UI signals and force ru language markers.
   out = out
@@ -503,13 +513,19 @@ const pageRoutes = {
 
   '/contact': 'pages/contact.html',
 
+  '/my-account': 'reference-home.html',
+  '/sign-in': 'reference-home.html',
+  '/sign-up': 'reference-home.html',
+  '/register': 'reference-home.html',
+  '/payment-step-3': 'reference-home.html',
+  '/checkout-step-3': 'reference-home.html',
   '/my-account': 'pages/my-account.html',
   '/sign-in': 'pages/sign-in.html',
   '/sign-up': 'pages/sign-up.html',
   '/register': 'pages/sign-up.html',
   '/payment-step-3': 'pages/payment-step-3.html',
   '/checkout-step-3': 'pages/payment-step-3.html',
-
+  
   '/vpn-for-windows': 'pages/vpn-for-windows.html',
   '/products/vpn-for-windows': 'pages/vpn-for-windows.html',
   '/vpn-for-mac': 'pages/vpn-for-mac.html',
@@ -557,6 +573,7 @@ const registerPageRoute = (route, filePath) => {
 Object.entries(pageRoutes).forEach(([route, filePath]) => {
   registerPageRoute(route, filePath);
 });
+
 
 const specialBrandedRoutes = [
   '/my-account',
