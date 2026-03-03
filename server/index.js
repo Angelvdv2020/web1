@@ -13,6 +13,11 @@ const sourceHomeHtmlPathPreferred = path.join(__dirname, '..', '123', 'Глав�
 const sourceHomeHtmlPath = fs.existsSync(sourceHomeHtmlPathPreferred)
   ? sourceHomeHtmlPathPreferred
   : defaultHomeHtmlPath;
+const htmlPath = path.join(publicDir, 'reference-home.html');
+const referenceAuthTemplatePathPreferred = path.join(__dirname, '..', '123', 'Главная страница', 'reference-home.html');
+const referenceAuthTemplatePath = fs.existsSync(referenceAuthTemplatePathPreferred)
+  ? referenceAuthTemplatePathPreferred
+  : htmlPath;
 const preferredAssetsDir = path.join(__dirname, '..', '123', 'карта мира_files');
 const assetsDir = fs.existsSync(preferredAssetsDir)
   ? preferredAssetsDir
@@ -260,6 +265,35 @@ const domainSwapPairs = [
 ];
 
 
+
+
+const ruTextReplacements = [
+  ['Pricing', 'Цены'],
+  ['Features', 'Возможности'],
+  ['Locations', 'Локации'],
+  ['Contact', 'Контакты'],
+  ['My account', 'Мой аккаунт'],
+  ['Sign in', 'Вход'],
+  ['Sign up', 'Регистрация'],
+  ['Register', 'Регистрация'],
+  ['Help Center', 'Центр помощи'],
+  ['Privacy Policy', 'Политика конфиденциальности'],
+  ['Terms of Service', 'Условия использования'],
+  ['Refund Policy', 'Политика возврата'],
+  ['Blog', 'Блог'],
+  ['FAQ', 'Вопросы и ответы'],
+  ['Download', 'Скачать'],
+  ['Get started', 'Начать'],
+];
+
+const replaceCommonTextToRussian = (input) => {
+  let out = input;
+  for (const [from, to] of ruTextReplacements) {
+    out = out.replace(new RegExp(escapeRegex(from), 'g'), to);
+  }
+  return out;
+};
+
 const replaceConfiguredDomainLinks = (input) => {
   let out = input;
 
@@ -278,6 +312,7 @@ const replaceConfiguredDomainLinks = (input) => {
 
 const localizeHtml = (html) => {
   let out = replaceConfiguredDomainLinks(html);
+  out = replaceCommonTextToRussian(out);
 
   // Domain replacements.
   out = out
@@ -300,6 +335,9 @@ const localizeHtml = (html) => {
   out = out
     .replace(
       /https?:\/\/(?:www\.)?(?:app\.noryxvpn\.store|noryxvpn\.store|app\.zgproxy\.org|zgproxy\.org|app\.zoogvpn\.com|zoogvpn\.com|(?:www\.)?zoogvpn\.net|zgnet\.vip)\/[^"'<>\\s)]+/gi,
+
+
+      /https?:\/\/(?:www\.)?(?:app\.noryxvpn\.store|noryxvpn\.store|app\.zgproxy\.org|zgproxy\.org|app\.zoogvpn\.com|zoogvpn\.com|(?:www\.)?zoogvpn\.net|zgnet\.vip)\/[^"'<>\\\s)]+/gi,
       (urlValue) => rewriteAssetUrlToLocal(urlValue),
     )
     .replace(/\/(?:wp-content|wp-includes)\/[^"'<>\\s)]+/gi, (urlValue) => rewriteAssetUrlToLocal(urlValue));
@@ -319,6 +357,86 @@ const localizeHtml = (html) => {
     .replace(/https?:\/\/t\.me\/(?:zoogvpn_support_team_bot|noryxvpn_support_team_bot)/gi, 'https://t.me/NoryxWebBot')
     .replace(/<h4 class="info__name">[^<]*<\/h4>/gi, '<h4 class="info__name">Noryx Support</h4>');
 
+  out = out
+    .replace(/https?:\/\/app\.noryxvpn\.store\/checkout(?:-[^"'<>\s]*)?(?:\?[^"'<>\s]*)?/gi, 'https://noryxvpn.store/pricing/')
+    .replace(/\/checkout(?:-[^"'<>\s]*)?(?:\?[^"'<>\s]*)?/gi, '/pricing/')
+    .replace(/https?:\/\/t\.me\/(?:zoogvpn_support_team_bot|noryxvpn_support_team_bot)/gi, 'https://t.me/NoryxWebBot')
+    .replace(/<h4 class="info__name">[^<]*<\/h4>/gi, '<h4 class="info__name">Noryx Support</h4>');
+
+  // Keep only Russian locale UI signals and force ru language markers.
+  out = out
+    .replace(/<html([^>]*?)\slang=["'][^"']*["']([^>]*)>/i, '<html$1 lang="ru"$2>')
+    .replace(/<link[^>]+hreflang=["'](?!ru|ru-ru)[^"']+["'][^>]*>/gi, '')
+    .replace(/<a[^>]*href=["'][^"']*[?&]lang=(?!ru)[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, '')
+    .replace(/<option[^>]+value=["'](?!ru)[^"']+["'][^>]*>[\s\S]*?<\/option>/gi, '');
+
+  // Remove logo/favicons everywhere without replacement.
+  out = out
+    .replace(/<meta[^>]+(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image)["'][^>]*>/gi, '')
+    .replace(/<link[^>]+rel=["'][^"']*(?:icon|apple-touch-icon)[^"']*["'][^>]*>/gi, '')
+    .replace(/<meta[^>]+name=["']msapplication-TileImage["'][^>]*>/gi, '')
+    .replace(/<div[^>]*\b(?:logo-canonical|elementor-widget-wp-widget-dvpn_logo_widget)\b[^>]*>[\s\S]*?<\/div>/gi, '')
+    .replace(/<a[^>]*>\s*<img[^>]*(?:logo|zoog-vpn-logo-dark|noryx-vpn-logo-dark|logo-ZoogVPN|logo-NoryxVPN|zoogvpn_favicon|noryxvpn_favicon|favicon\.ico)[^>]*>\s*<\/a>/gi, '')
+    .replace(/<img[^>]*(?:logo|zoog-vpn-logo-dark|noryx-vpn-logo-dark|logo-ZoogVPN|logo-NoryxVPN|zoogvpn_favicon|noryxvpn_favicon|favicon\.ico)[^>]*>/gi, '')
+    .replace(/\$\('\.logo-canonical a'\)\.attr\('href',\s*'[^']*'\)\s*;?/gi, '');
+
+  // Force sign-in page URL to app subdomain.
+  out = out
+    .replace(/https?:\/\/noryxvpn\.store\/sign-in\/?/gi, 'https://app.noryxvpn.store/sign-in')
+    .replace(/href=["']\/sign-in\/?["']/gi, 'href="https://app.noryxvpn.store/sign-in"');
+
+  // Payment data/link replacements (preserve content, only rewrite endpoints).
+  out = out
+    .replace(/https?:\/\/app\.noryxvpn\.store\/checkout(?:-[^"'<>\s]*)?(?:\?[^"'<>\s]*)?/gi, 'https://noryxvpn.store/pricing/')
+    .replace(/https:\\\/\\\/app\.noryxvpn\.store\\\/checkout(?:-[^"'<>\s]*)?(?:\\\?[^"'<>\s]*)?/gi, 'https:\\/\\/noryxvpn.store\\/pricing\\/')
+    .replace(/\/checkout(?:-[^"'<>\s]*)?(?:\?[^"'<>\s]*)?/gi, '/pricing/');
+
+  // Telegram support block customization.
+  out = out
+    .replace(/<h4 class="info__name">[^<]*<\/h4>/gi, '<h4 class="info__name">Noryx Support</h4>')
+    .replace(/https?:\/\/t\.me\/(?:zoogvpn_support_team_bot|noryxvpn_support_team_bot)/gi, 'https://t.me/NoryxWebBot');
+
+  // Remove floating Telegram support widget (green square bubble).
+  out = out
+    .replace(/<div class="teleSupport[\s\S]*?teleSupport__send-message[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/gi, '')
+    .replace(/<div class="teleSupport[\s\S]*?(?=<div id="pum-)/gi, '');
+
+  // Remove floating "Exclusive Offer" banner popup from all pages (pum-55233).
+  out = out
+    .replace(/<div\s+id="pum-55233"[\s\S]*?(?=<script)/gi, '');
+
+  // Remove chat-telegram assets to prevent floating chat bubble injection.
+  out = out
+    .replace(/<link[^>]*chat-telegram\/assets\/css\/all\.min\.css[^>]*>/gi, '')
+    .replace(/<link[^>]*chat-telegram\/assets\/css\/cts-main\.css[^>]*>/gi, '')
+    .replace(/<script[^>]*chat-telegram\/assets\/js\/moment-timezone-with-data\.min\.js[^>]*><\/script>/gi, '')
+    .replace(/<script[^>]*chat-telegram\/assets\/js\/cts-main\.js[^>]*><\/script>/gi, '');
+
+
+  // Remove download buttons and app-store blocks by request.
+  out = out
+    .replace(/<a[^>]*(?:download|app\s*store|play\s*store|google\s*play|vpn-for-(?:windows|mac|ios|android|linux|router))[^>]*>[\s\S]*?<\/a>/gi, '')
+    .replace(/<button[^>]*(?:download|app\s*store|play\s*store|google\s*play)[^>]*>[\s\S]*?<\/button>/gi, '')
+    .replace(/<section[^>]*(?:download)[^>]*>[\s\S]*?<\/section>/gi, '')
+    .replace(/<div[^>]*(?:download)[^>]*>[\s\S]*?<\/div>/gi, '');
+
+  // Remove download/contact buttons and related blocks by request.
+  out = out
+    .replace(/<a[^>]*(?:download|app\s*store|play\s*store|google\s*play|vpn-for-(?:windows|mac|ios|android|linux|router)|contact)[^>]*>[\s\S]*?<\/a>/gi, '')
+    .replace(/<button[^>]*(?:download|app\s*store|play\s*store|google\s*play|contact)[^>]*>[\s\S]*?<\/button>/gi, '')
+    .replace(/<section[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/section>/gi, '')
+    .replace(/<div[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/div>/gi, '');
+ 
+
+  // Remove only third-party injected widget scripts.
+  out = out
+    .replace(/<script[^>]*data-site-id="1802"[^>]*><\/script>/gi, '')
+    .replace(/<script[^>]*>\s*window\.op=window\.op\|\|function[\s\S]*?<\/script>/gi, '')
+    .replace(/<script[^>]*src="\.\/карта мира_files\/op1\.js[^"]*"[^>]*><\/script>/gi, '')
+    .replace(/<iframe[^>]*saved_resource\.html[^>]*><\/iframe>/gi, '')
+    .replace(/<div id="batBeacon[^>]*>[\s\S]*?<\/div>/gi, '')
+    .replace(/<script[^>]*>\(function\(a,c,d\)\{var b=document\.createElement\(d\);[\s\S]*?adscool\.net[\s\S]*?<\/script>/gi, '');
+
   const injectedHead = '<base href="/">\n<link rel="stylesheet" href="/style/site.css">\n';
   if (!out.includes('/style/site.css')) {
     out = out.replace('</head>', `${injectedHead}</head>`);
@@ -337,6 +455,27 @@ const getLocalizedHtml = (relativePath) => {
 
   const raw = fs.readFileSync(absolutePath, 'utf8');
   return localizeHtml(raw);
+};
+
+const getBrandedReferenceHtml = () => {
+  if (!fs.existsSync(referenceAuthTemplatePath)) {
+    return null;
+  }
+
+  const raw = fs.readFileSync(referenceAuthTemplatePath, 'utf8');
+  return localizeHtml(raw);
+};
+
+const sendBrandedReferencePage = (res) => {
+  const html = getBrandedReferenceHtml();
+  if (!html) {
+    setNoCacheHeaders(res);
+    res.status(404).type('text/plain').send('Not Found');
+    return;
+  }
+
+  setNoCacheHeaders(res);
+  res.type('html').send(html);
 };
 
 const sendLocalizedFile = (res, relativePath) => {
@@ -386,6 +525,7 @@ const pageRoutes = {
   '/pricing': 'pages/pricing.html',
   '/locations': 'pages/locations.html',
   '/network': 'pages/locations.html',
+
   '/contact': 'pages/contact.html',
 
   '/my-account': 'reference-home.html',
@@ -395,6 +535,13 @@ const pageRoutes = {
   '/payment-step-3': 'reference-home.html',
   '/checkout-step-3': 'reference-home.html',
 
+  '/my-account': 'pages/my-account.html',
+  '/sign-in': 'pages/sign-in.html',
+  '/sign-up': 'pages/sign-up.html',
+  '/register': 'pages/sign-up.html',
+  '/payment-step-3': 'pages/payment-step-3.html',
+  '/checkout-step-3': 'pages/payment-step-3.html',
+  
   '/vpn-for-windows': 'pages/vpn-for-windows.html',
   '/products/vpn-for-windows': 'pages/vpn-for-windows.html',
   '/vpn-for-mac': 'pages/vpn-for-mac.html',
@@ -441,6 +588,27 @@ const registerPageRoute = (route, filePath) => {
 
 Object.entries(pageRoutes).forEach(([route, filePath]) => {
   registerPageRoute(route, filePath);
+});
+
+
+
+const specialBrandedRoutes = [
+  '/my-account',
+  '/my-account/',
+  '/sign-in',
+  '/sign-in/',
+  '/sign-up',
+  '/sign-up/',
+  '/register',
+  '/register/',
+  '/payment-step-3',
+  '/payment-step-3/',
+  '/checkout-step-3',
+  '/checkout-step-3/',
+];
+
+app.get(specialBrandedRoutes, (_req, res) => {
+  sendBrandedReferencePage(res);
 });
 
 app.use(
