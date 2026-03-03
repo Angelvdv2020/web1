@@ -357,6 +357,11 @@ const localizeHtml = (html) => {
     .replace(/<img[^>]*(?:logo|zoog-vpn-logo-dark|noryx-vpn-logo-dark|logo-ZoogVPN|logo-NoryxVPN|zoogvpn_favicon|noryxvpn_favicon|favicon\.ico)[^>]*>/gi, '')
     .replace(/\$\('\.logo-canonical a'\)\.attr\('href',\s*'[^']*'\)\s*;?/gi, '');
 
+  // Force sign-in page URL to app subdomain.
+  out = out
+    .replace(/https?:\/\/noryxvpn\.store\/sign-in\/?/gi, 'https://app.noryxvpn.store/sign-in')
+    .replace(/href=["']\/sign-in\/?["']/gi, 'href="https://app.noryxvpn.store/sign-in"');
+
   // Payment data/link replacements (preserve content, only rewrite endpoints).
   out = out
     .replace(/https?:\/\/app\.noryxvpn\.store\/checkout(?:-[^"'<>\s]*)?(?:\?[^"'<>\s]*)?/gi, 'https://noryxvpn.store/pricing/')
@@ -385,12 +390,20 @@ const localizeHtml = (html) => {
     .replace(/<script[^>]*chat-telegram\/assets\/js\/cts-main\.js[^>]*><\/script>/gi, '');
 
 
+  // Remove download buttons and app-store blocks by request.
+  out = out
+    .replace(/<a[^>]*(?:download|app\s*store|play\s*store|google\s*play|vpn-for-(?:windows|mac|ios|android|linux|router))[^>]*>[\s\S]*?<\/a>/gi, '')
+    .replace(/<button[^>]*(?:download|app\s*store|play\s*store|google\s*play)[^>]*>[\s\S]*?<\/button>/gi, '')
+    .replace(/<section[^>]*(?:download)[^>]*>[\s\S]*?<\/section>/gi, '')
+    .replace(/<div[^>]*(?:download)[^>]*>[\s\S]*?<\/div>/gi, '');
+
   // Remove download/contact buttons and related blocks by request.
   out = out
     .replace(/<a[^>]*(?:download|app\s*store|play\s*store|google\s*play|vpn-for-(?:windows|mac|ios|android|linux|router)|contact)[^>]*>[\s\S]*?<\/a>/gi, '')
     .replace(/<button[^>]*(?:download|app\s*store|play\s*store|google\s*play|contact)[^>]*>[\s\S]*?<\/button>/gi, '')
     .replace(/<section[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/section>/gi, '')
     .replace(/<div[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/div>/gi, '');
+ 
 
   // Remove only third-party injected widget scripts.
   out = out
@@ -489,6 +502,7 @@ const pageRoutes = {
   '/network': 'pages/locations.html',
 
   '/contact': 'pages/contact.html',
+
   '/my-account': 'pages/my-account.html',
   '/sign-in': 'pages/sign-in.html',
   '/sign-up': 'pages/sign-up.html',
@@ -562,7 +576,6 @@ const specialBrandedRoutes = [
 app.get(specialBrandedRoutes, (_req, res) => {
   sendBrandedReferencePage(res);
 });
-
 
 app.use(
   express.static(publicDir, {
