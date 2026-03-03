@@ -9,6 +9,10 @@ const PORT = Number(process.env.PORT) || 3002;
 
 const publicDir = path.join(__dirname, '..', 'public');
 const htmlPath = path.join(publicDir, 'reference-home.html');
+const referenceAuthTemplatePathPreferred = path.join(__dirname, '..', '123', 'Главная страница', 'reference-home.html');
+const referenceAuthTemplatePath = fs.existsSync(referenceAuthTemplatePathPreferred)
+  ? referenceAuthTemplatePathPreferred
+  : htmlPath;
 const preferredAssetsDir = path.join(__dirname, '..', '123', 'карта мира_files');
 const assetsDir = fs.existsSync(preferredAssetsDir)
   ? preferredAssetsDir
@@ -311,11 +315,14 @@ const localizeHtml = (html) => {
     .replace(/https?:\/\/zoogvpn\.com/gi, 'https://noryxvpn.store')
     .replace(/https?:\/\/(?:www\.)?zoogvpn\.net/gi, 'https://noryxvpn.store')
     .replace(/https?:\/\/zgnet\.vip/gi, 'https://noryxvpn.store')
-    .replace(/https:\\\/\\\/app\.zgproxy\.org/gi, 'https:\\/\\/app.noryxvpn.store')
-    .replace(/https:\\\/\\\/zgproxy\.org/gi, 'https:\\/\\/noryxvpn.store')
-    .replace(/https:\\\/\\\/app\.zoogvpn\.com/gi, 'https:\\/\\/app.noryxvpn.store')
-    .replace(/https:\\\/\\\/zoogvpn\.com/gi, 'https:\\/\\/noryxvpn.store')
-    .replace(/https:\\\/\\\/zgnet\.vip/gi, 'https:\\/\\/noryxvpn.store');
+    .replace(/\/\/zgproxy\.org/gi, '//noryxvpn.store')
+    .replace(/\/\/zoogvpn\.com/gi, '//noryxvpn.store')
+    .replace(/zgproxy\.org/gi, 'noryxvpn.store')
+    .replace(/zoogvpn\.com/gi, 'noryxvpn.store')
+    .replace(/zoogvpn\.net/gi, 'noryxvpn.store')
+    .replace(/zgnet\.vip/gi, 'noryxvpn.store')
+    .replace(/https%3A%2F%2Fzgproxy\.org/gi, 'https%3A%2F%2Fnoryxvpn.store')
+    .replace(/https%3A%2F%2Fzoogvpn\.com/gi, 'https%3A%2F%2Fnoryxvpn.store');
 
   // Force external wp-content/wp-includes assets to local files.
   out = out
@@ -377,6 +384,14 @@ const localizeHtml = (html) => {
     .replace(/<script[^>]*chat-telegram\/assets\/js\/moment-timezone-with-data\.min\.js[^>]*><\/script>/gi, '')
     .replace(/<script[^>]*chat-telegram\/assets\/js\/cts-main\.js[^>]*><\/script>/gi, '');
 
+
+  // Remove download/contact buttons and related blocks by request.
+  out = out
+    .replace(/<a[^>]*(?:download|app\s*store|play\s*store|google\s*play|vpn-for-(?:windows|mac|ios|android|linux|router)|contact)[^>]*>[\s\S]*?<\/a>/gi, '')
+    .replace(/<button[^>]*(?:download|app\s*store|play\s*store|google\s*play|contact)[^>]*>[\s\S]*?<\/button>/gi, '')
+    .replace(/<section[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/section>/gi, '')
+    .replace(/<div[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/div>/gi, '');
+
   // Remove only third-party injected widget scripts.
   out = out
     .replace(/<script[^>]*data-site-id="1802"[^>]*><\/script>/gi, '')
@@ -402,6 +417,27 @@ const getLocalizedHtml = (relativePath) => {
 
   const raw = fs.readFileSync(absolutePath, 'utf8');
   return localizeHtml(raw);
+};
+
+const getBrandedReferenceHtml = () => {
+  if (!fs.existsSync(referenceAuthTemplatePath)) {
+    return null;
+  }
+
+  const raw = fs.readFileSync(referenceAuthTemplatePath, 'utf8');
+  return localizeHtml(raw);
+};
+
+const sendBrandedReferencePage = (res) => {
+  const html = getBrandedReferenceHtml();
+  if (!html) {
+    setNoCacheHeaders(res);
+    res.status(404).type('text/plain').send('Not Found');
+    return;
+  }
+
+  setNoCacheHeaders(res);
+  res.type('html').send(html);
 };
 
 const sendLocalizedFile = (res, relativePath) => {
@@ -451,6 +487,7 @@ const pageRoutes = {
   '/pricing': 'pages/pricing.html',
   '/locations': 'pages/locations.html',
   '/network': 'pages/locations.html',
+
   '/contact': 'pages/contact.html',
   '/my-account': 'pages/my-account.html',
   '/sign-in': 'pages/sign-in.html',
@@ -506,6 +543,26 @@ const registerPageRoute = (route, filePath) => {
 Object.entries(pageRoutes).forEach(([route, filePath]) => {
   registerPageRoute(route, filePath);
 });
+
+const specialBrandedRoutes = [
+  '/my-account',
+  '/my-account/',
+  '/sign-in',
+  '/sign-in/',
+  '/sign-up',
+  '/sign-up/',
+  '/register',
+  '/register/',
+  '/payment-step-3',
+  '/payment-step-3/',
+  '/checkout-step-3',
+  '/checkout-step-3/',
+];
+
+app.get(specialBrandedRoutes, (_req, res) => {
+  sendBrandedReferencePage(res);
+});
+
 
 app.use(
   express.static(publicDir, {
