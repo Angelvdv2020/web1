@@ -5,7 +5,7 @@ const express = require('express');
 
 const app = express();
 app.disable('etag');
-const PORT = 3002;
+const PORT = Number(process.env.PORT) || 3002;
 
 const publicDir = path.join(__dirname, '..', 'public');
 const htmlPath = path.join(publicDir, 'reference-home.html');
@@ -14,6 +14,23 @@ const assetsDir = fs.existsSync(preferredAssetsDir)
   ? preferredAssetsDir
   : path.join(publicDir, 'карта мира_files');
 const noCacheFileOptions = { etag: false, lastModified: false, cacheControl: false };
+const staticMaxAgeMs = Number(process.env.STATIC_MAX_AGE_MS) || 7 * 24 * 60 * 60 * 1000;
+
+const setNoCacheHeaders = (res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+};
+
+const setStaticCacheHeaders = (res, filePath) => {
+  if (/\.html?$/i.test(filePath)) {
+    setNoCacheHeaders(res);
+    return;
+  }
+
+  res.setHeader('Cache-Control', `public, max-age=${Math.floor(staticMaxAgeMs / 1000)}, immutable`);
+};
 
 const safeDecode = (value) => {
   try {
@@ -332,25 +349,20 @@ const getLocalizedHtml = (relativePath) => {
 const sendLocalizedFile = (res, relativePath) => {
   const html = getLocalizedHtml(relativePath);
   if (!html) {
+    setNoCacheHeaders(res);
     res.status(404).type('text/plain').send('Not Found');
     return;
   }
+  setNoCacheHeaders(res);
   res.type('html').send(html);
 };
 
-app.use((req, res, next) => {
-  // Force fully uncached behavior for all responses.
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  res.setHeader('Surrogate-Control', 'no-store');
-  next();
+app.get('/healthz', (_req, res) => {
+  res.status(200).json({ ok: true });
 });
 
-app.use(express.static(publicDir, { etag: false, lastModified: false, maxAge: 0, immutable: false }));
-app.use('/карта мира_files', express.static(assetsDir, { etag: false, lastModified: false, maxAge: 0, immutable: false }));
-
 app.get('/favicon.ico', (_req, res) => {
+  setNoCacheHeaders(res);
   res.status(204).end();
 });
 
@@ -364,7 +376,7 @@ app.get('*', (req, res, next) => {
   const resolvedFileName = resolveAssetFileName(fileName) || resolveAssetFileName(req.path);
   if (resolvedFileName) {
     const candidate = path.join(assetsDir, resolvedFileName);
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    setStaticCacheHeaders(res, resolvedFileName);
     return res.sendFile(candidate, noCacheFileOptions);
   }
 
@@ -435,8 +447,29 @@ Object.entries(pageRoutes).forEach(([route, filePath]) => {
   registerPageRoute(route, filePath);
 });
 
+app.use(
+  express.static(publicDir, {
+    etag: false,
+    lastModified: false,
+    maxAge: staticMaxAgeMs,
+    immutable: true,
+    setHeaders: setStaticCacheHeaders,
+  }),
+);
+app.use(
+  '/карта мира_files',
+  express.static(assetsDir, {
+    etag: false,
+    lastModified: false,
+    maxAge: staticMaxAgeMs,
+    immutable: true,
+    setHeaders: setStaticCacheHeaders,
+  }),
+);
+
 // Return explicit 404 for unknown routes instead of rendering home page everywhere.
 app.get('*', (_req, res) => {
+  setNoCacheHeaders(res);
   res.status(404).type('text/plain').send('Not Found');
 });
 
