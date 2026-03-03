@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Host: noryxvpn.store
+Sitemap: https://noryxvpn.store/sitemap.xml
