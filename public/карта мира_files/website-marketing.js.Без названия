@@ -1,0 +1,258 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const host = window.location.hostname;
+    const all_domains = "." + host;
+    const cookie_ttl = 365;
+
+	const urlParams = new URLSearchParams(window.location.search);
+	
+	// Process 'aff' parameter
+	if (urlParams.has('aff')) {
+		const refid = parseInt(urlParams.get('aff'));
+		if (!isNaN(refid)) {
+			Cookies.remove('connector_aff_id', { path: '', domain: all_domains });
+			const checkAffid = Cookies.get('aff_id');
+			if (checkAffid === undefined || parseInt(checkAffid) !== refid) {
+				Cookies.set('aff_id', refid, { domain: all_domains, expires: cookie_ttl });
+			}
+		}
+	}
+	
+	// Process 'connector_aff' parameter
+	if (urlParams.has('connector_aff')) {
+		const connectorRefid = parseInt(urlParams.get('connector_aff'));
+		if (!isNaN(connectorRefid)) {
+			Cookies.remove('aff_id', { path: '', domain: all_domains });
+			const checkConnectorAffid = Cookies.get('connector_aff_id');
+			if (checkConnectorAffid === undefined || parseInt(checkConnectorAffid) !== connectorRefid) {
+				Cookies.set('connector_aff_id', connectorRefid, { domain: all_domains, expires: cookie_ttl });
+			}
+		}
+	}
+	
+	// Process 'promo_aff' parameter
+	if (urlParams.has('promo_aff')) {
+		const promoAff = urlParams.get('promo_aff');
+		if (promoAff) {
+			const checkPromoAff = Cookies.get('promo_aff');
+			if (checkPromoAff === undefined || checkPromoAff !== promoAff) {
+				Cookies.set('promo_aff', promoAff, { domain: all_domains, expires: cookie_ttl });
+			}
+		}
+	}
+	
+	var gclid = null;
+	var utm_source = 'none';
+	var utm_campaign = 'none';
+	var utm_term = 'none';
+	var utm_content = 'none';
+	var utm_medium = 'none';
+	
+	if(window.location.search.indexOf('gclid=') > -1 && window.location.search.split("gclid=").length > 1) {
+		utm_source = 'google';
+		utm_medium = 'cpc';
+		
+		gclid = window.location.search.split("gclid=")[1];
+		if(gclid.split("&").length > 1) {
+			gclid = gclid.split("&")[0];
+		}
+		if(gclid.split("GA1.2.").length > 1) {
+			gclid = gclid.split("GA1.2.")[0];
+		}
+		
+		if(window.location.search.indexOf('utm_campaign=') > -1 && window.location.search.split("utm_campaign=").length > 1) {
+			utm_campaign = window.location.search.split("utm_campaign=")[1];
+			if(utm_campaign.split("&").length > 1) {
+				utm_campaign = utm_campaign.split("&")[0];
+			}
+		} else if(window.location.search.indexOf('campaignid=') > -1 && window.location.search.split("campaignid=").length > 1) {
+			utm_campaign = window.location.search.split("campaignid=")[1];
+			if(utm_campaign.split("&").length > 1) {
+				utm_campaign = utm_campaign.split("&")[0];
+			}
+		}
+		
+		if(window.location.search.indexOf('utm_term=') > -1 && window.location.search.split("utm_term=").length > 1) {
+			utm_term = window.location.search.split("utm_term=")[1];
+			if(utm_term.split("&").length > 1) {
+				utm_term = utm_term.split("&")[0];
+			}
+		} else if(window.location.search.indexOf('keyword=') > -1 && window.location.search.split("keyword=").length > 1) {
+			utm_term = window.location.search.split("keyword=")[1];
+			if(utm_term.split("&").length > 1) {
+				utm_term = utm_term.split("&")[0];
+			}
+		}
+		
+		if(window.location.search.indexOf('utm_content=') > -1 && window.location.search.split("utm_content=").length > 1) {
+			utm_content = window.location.search.split("utm_content=")[1];
+			if(utm_content.split("&").length > 1) {
+				utm_content = utm_content.split("&")[0];
+			}
+		}
+		
+	} else if ( (window.location.search.indexOf('utm_source=') > -1 && window.location.search.split("utm_source=").length > 1) ||
+		(window.location.search.indexOf('utm_medium=') > -1 && window.location.search.split("utm_medium=").length > 1) ||
+		(window.location.search.indexOf('utm_campaign=') > -1 && window.location.search.split("utm_campaign=").length > 1) ||
+		(window.location.search.indexOf('utm_term=') > -1 && window.location.search.split("utm_term=").length > 1) ||
+		(window.location.search.indexOf('utm_content=') > -1 && window.location.search.split("utm_content=").length > 1) ||
+		(window.location.search.indexOf('campaignid=') > -1 && window.location.search.split("campaignid=").length > 1) ||
+		(window.location.search.indexOf('keyword=') > -1 && window.location.search.split("keyword=").length > 1) ) {
+		
+		if(window.location.search.indexOf('utm_source=') > -1 && window.location.search.split("utm_source=").length > 1) {
+			utm_source = window.location.search.split("utm_source=")[1];
+			if(utm_source.split("&").length > 1) {
+				utm_source = utm_source.split("&")[0];
+			}
+		}
+		
+		if(window.location.search.indexOf('utm_medium=') > -1 && window.location.search.split("utm_medium=").length > 1) {
+			utm_medium = window.location.search.split("utm_medium=")[1];
+			if(utm_medium.split("&").length > 1) {
+				utm_medium = utm_medium.split("&")[0];
+			}
+		}
+		
+		if(window.location.search.indexOf('utm_campaign=') > -1 && window.location.search.split("utm_campaign=").length > 1) {
+			utm_campaign = window.location.search.split("utm_campaign=")[1];
+			if(utm_campaign.split("&").length > 1) {
+				utm_campaign = utm_campaign.split("&")[0];
+			}
+		} else if(window.location.search.indexOf('campaignid=') > -1 && window.location.search.split("campaignid=").length > 1) {
+			utm_campaign = window.location.search.split("campaignid=")[1];
+			if(utm_campaign.split("&").length > 1) {
+				utm_campaign = utm_campaign.split("&")[0];
+			}
+		}
+		
+		if(window.location.search.indexOf('utm_term=') > -1 && window.location.search.split("utm_term=").length > 1) {
+			utm_term = window.location.search.split("utm_term=")[1];
+			if(utm_term.split("&").length > 1) {
+				utm_term = utm_term.split("&")[0];
+			}
+		} else if(window.location.search.indexOf('keyword=') > -1 && window.location.search.split("keyword=").length > 1) {
+			utm_term = window.location.search.split("keyword=")[1];
+			if(utm_term.split("&").length > 1) {
+				utm_term = utm_term.split("&")[0];
+			}
+		}
+		
+		if(window.location.search.indexOf('utm_content=') > -1 && window.location.search.split("utm_content=").length > 1) {
+			utm_content = window.location.search.split("utm_content=")[1];
+			if(utm_content.split("&").length > 1) {
+				utm_content = utm_content.split("&")[0];
+			}
+		}
+		
+	} else if (document.referrer && document.referrer.length > 1){
+		const searchEngines = [
+			'google.',
+			'bing.',
+			'yahoo.',
+			'duckduckgo.',
+			'yandex.',
+			'ya.',
+			'baidu.'
+		];
+
+		var referrer = document.referrer;
+		var utm_source = '';
+		var utm_medium = '';
+		try {
+			const url = new URL(referrer);
+			referrer = url.hostname;
+		} catch (e) {
+			referrer = '';
+		}
+		referrer = referrer.replace(/^www\./i, '');
+
+		if (!referrer) {
+			utm_source = 'direct';
+			utm_medium = 'none';
+		} else if (referrer.includes(window.location.hostname)) {
+			utm_source = 'direct';
+			utm_medium = 'none';
+		} else if (referrer.includes('webpkgcache.com')) {
+			utm_source = 'google';
+			utm_medium = 'organic';
+		} else {
+			const matchedEngine = searchEngines.find(engine => referrer.includes(engine));
+			if (matchedEngine) {
+				utm_source = matchedEngine.replace('.', '').replace(/[^a-z]/gi, '');
+				utm_medium = 'organic';
+			} else {
+				utm_source = referrer.split('.')[0];
+				utm_medium = 'referral';
+			}
+		}
+		
+	} else {
+		utm_source = 'direct';
+	}
+
+	if(!Cookies.get('utm_source') || Cookies.get('utm_source') === undefined ||
+		(Cookies.get('utm_source') !== undefined
+			// && document.referrer
+			&& document.referrer.indexOf(location.origin) === -1
+			&& document.referrer.indexOf(host) === -1 && utm_source !== 'direct')) {
+		Cookies.set('gclid', gclid, { domain: all_domains, expires: cookie_ttl });
+		localStorage.setItem('gclid', gclid);
+		
+		Cookies.set('utm_source', utm_source, { domain: all_domains, expires: cookie_ttl });
+		localStorage.setItem('utm_source', utm_source);
+		
+		Cookies.set('utm_medium', utm_medium, { domain: all_domains, expires: cookie_ttl });
+		localStorage.setItem('utm_medium', utm_medium);
+		
+		Cookies.set('utm_campaign', utm_campaign, { domain: all_domains, expires: cookie_ttl });
+		localStorage.setItem('utm_campaign', utm_campaign);
+		
+		Cookies.set('utm_term', utm_term, { domain: all_domains, expires: cookie_ttl });
+		localStorage.setItem('utm_term', utm_term);
+		
+		Cookies.set('utm_content', utm_content, { domain: all_domains, expires: cookie_ttl });
+		localStorage.setItem('utm_content', utm_content);
+		
+		// console.log('save');
+		// console.log('gclid', gclid);
+		// console.log('utm_source', utm_source);
+		// console.log('utm_medium', utm_medium);
+		// console.log('utm_campaign', utm_campaign);
+		// console.log('utm_term', utm_term);
+		// console.log('utm_content', utm_content);
+	} 
+	// else {
+	// 	console.log('ignore');
+	// 	console.log('gclid', gclid);
+	// 	console.log('utm_source', utm_source);
+	// 	console.log('utm_medium', utm_medium);
+	// 	console.log('utm_campaign', utm_campaign);
+	// 	console.log('utm_term', utm_term);
+	// 	console.log('utm_content', utm_content);
+		
+	// }
+	
+	// old
+	if(document.referrer && document.referrer.indexOf(location.origin) === -1 && document.referrer.split('/').length > 2 && document.referrer.split('/')[2]) {
+		if(document.referrer.split('/')[2].indexOf('ranksonic.com') === -1 && document.referrer.split('/')[2].indexOf('rankactive.com') === -1
+			&& document.referrer.split('/')[2].indexOf(host) === -1) {
+			Cookies.set('referrer', document.referrer, { domain: all_domains, expires: cookie_ttl });
+		}
+	}
+	if(window.location.search.length > 0) {
+		let params = window.location.search;
+		if (params) {
+			for (let i = 1; i < 6; i++) {
+				if (Cookies.get('referrer_params_' + i) && window.location.search === Cookies.get('referrer_params_' + i)) {
+					break;
+				}
+				if (!Cookies.get('referrer_params_' + i)) {
+					Cookies.set('referrer_params_' + i, params, {
+						domain: all_domains,
+						expires: cookie_ttl
+					});
+					break;
+				}
+			}
+		}
+	}
+}, false);

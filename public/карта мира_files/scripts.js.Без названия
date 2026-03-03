@@ -1,0 +1,596 @@
+/*---------------------------------------------
+Template name:
+Version:        1.0
+Author:         ThemeLooks
+Author url:     http://themelooks.com
+
+NOTE:
+------
+Please DO NOT EDIT THIS JS, you may need to use "custom.js" file for writing your custom js.
+We may release future updates so it will overwrite this file. it's better and safer to use "custom.js".
+
+[Table of Content]
+
+
+01: Sticky Header
+02: Changing svg color
+03: Background Image
+04: Overlay Menu
+05: Back To Top
+06: Coming Soon Count Down
+07: Preloader
+08: Activate Animation
+09: Isotope - Filter
+
+
+----------------------------------------------*/
+
+(function ($) {
+    "use strict";
+
+    /* 01: Sticky Header
+    ==============================================*/
+
+    $(window).on('scroll', function (e) {
+        if ($(this).scrollTop() <= 45) {
+            $('.main-header, .dvpn_header, .dvpn_mobile-menu').removeClass('sticky');
+        } else
+            $('.main-header, .dvpn_header, .dvpn_mobile-menu').addClass('sticky')
+// 		if ($(window).scrollTop() <= 99) {
+// 			$('.sticky_header').removeClass('sticky');
+// 		} else {
+// 			$('.sticky_header').addClass('sticky');
+// 		}
+		
+    });
+
+    $(window).on('load', function () {
+        if ($(window).scrollTop() >= 45) {
+            $('.main-header, .dvpn_header, .dvpn_mobile-menu').addClass('sticky');
+        }
+
+    });
+	
+
+
+    /* 02: Changing svg color
+    ==============================================*/
+    jQuery('img.svg').each(function () {
+        let $img = jQuery(this);
+        let imgID = $img.attr('id');
+        let imgClass = $img.attr('class');
+        let imgURL = $img.attr('src');
+
+        jQuery.get(imgURL, function (data) {
+            // Get the SVG tag, ignore the rest
+            let $svg = jQuery(data).find('svg');
+
+            // Add replaced image's ID to the new SVG
+            if (typeof imgID !== 'undefined') {
+                $svg = $svg.attr('id', imgID);
+            }
+            // Add replaced image's classes to the new SVG
+            if (typeof imgClass !== 'undefined') {
+                $svg = $svg.attr('class', imgClass + ' replaced-svg');
+            }
+
+            // Remove any invalid XML tags as per http://validator.w3.org
+            $svg = $svg.removeAttr('xmlns:a');
+
+            // Check if the viewport is set, else we gonna set it if we can.
+            if (!$svg.attr('viewBox') && $svg.attr('height') && $svg.attr('width')) {
+                $svg.attr('viewBox', '0 0 ' + $svg.attr('height') + ' ' + $svg.attr('width'));
+            }
+
+            // Replace image with new SVG
+            $img.replaceWith($svg);
+
+        }, 'xml');
+    });
+
+    /* 03: Background Image
+    ==============================================*/
+    var $bgImg = $('[data-bg-img]');
+    $bgImg.css('background-image', function () {
+        return 'url("' + $(this).data('bg-img') + '")';
+    }).removeAttr('data-bg-img').addClass('bg-img');
+    /*==================================
+    04: Overlay Menu
+    ====================================*/
+
+    $(".menu-trigger").on("click", function (e) {
+        $(".dvpn_menu-wrapper").addClass("full-menu");
+        $(".menu-active-overlay").addClass("on");
+    });
+
+    $(".dvpn_menu_close, .menu-active-overlay").on("click", function (e) {
+        $(".dvpn_menu-wrapper").removeClass("full-menu");
+        $(".menu-active-overlay").removeClass("on");
+    });
+
+    $('.dvpn_main-menu').find('ul li').parents('.dvpn_main-menu ul li').addClass('has-sub-menu');
+    $('.dvpn_main-menu').find(".has-sub-menu").prepend('<span class="submenu-button"></span>');
+    $('.dvpn_main-menu').find(".submenu-button").on("click", function (event) {
+        $(this).toggleClass("sub-menu-oppened")
+        if ($(this).siblings('ul').hasClass('open')) {
+            $(this).siblings('ul').removeClass('open').slideUp('fast');
+        } else {
+            $(this).siblings('ul').addClass('open').slideDown('fast');
+        }
+
+    });
+
+    /* 5: Back To Top
+    ==============================================*/
+
+    let $backToTopBtn = $('.dvpn_backToTop');
+
+    if ($backToTopBtn.length) {
+        let scrollTrigger = 350, // px
+            backToTop = function () {
+                let scrollTop = $(window).scrollTop();
+                if (scrollTop > scrollTrigger) {
+                    $backToTopBtn.addClass('show');
+                } else {
+                    $backToTopBtn.removeClass('show');
+                }
+            };
+
+        backToTop();
+
+        $(window).on('scroll', function () {
+            backToTop();
+        });
+
+        $backToTopBtn.on('click', function (e) {
+            e.preventDefault();
+            $('html,body').animate({
+                scrollTop: 0
+            }, 700);
+        });
+    }
+
+    /* 6: Coming Soon Count Down
+    ==============================================*/
+
+    let $countDown = $('[data-countdown]');
+    $countDown.each(function () {
+        let $t = $(this);
+
+        $t.countdown($t.data('countdown'), function (e) {
+            $(this).html('<ul>' + e.strftime('<li><span>%D</span>DAYS</li><li><span>%H</span>HOURS</li><li><span>%M</span>MINUTES</li><li><span>%S</span>SECONDS</li>') + '</ul>');
+        });
+    });
+
+    /* 7: Preloader
+    ==============================================*/
+    $(window).on('load', function () {
+        $('.preloader').fadeOut(2000);
+    });
+
+    /* 08: Activate Animation
+    ==============================================*/
+    $(window).on('load', function () {
+
+        let $animateEl = $('[data-animate]');
+
+        $animateEl.each(function () {
+            let $el = $(this),
+                $name = $el.data('animate'),
+                $duration = $el.data('duration'),
+                $delay = $el.data('delay');
+
+            $duration = typeof $duration === 'undefined' ? '0.6' : $duration;
+            $delay = typeof $delay === 'undefined' ? '0.1' : $delay;
+
+            $el.waypoint(function () {
+                $el.addClass('animated ' + $name)
+                    .css({
+                        'animation-duration': $duration + 's',
+                        'animation-delay': $delay + 's'
+                    });
+            }, { offset: '93%' });
+        });
+    });
+
+
+    /* Menu Maker */
+    $(".main-menu-vertical").menumaker({
+        title: '<span></span>',
+        format: "multitoggle"
+    });
+
+    // Mobile Menu
+    function mobileMenu() {
+        let $menu = $('.mobile-menu-panel .mobile_menu');
+
+        $menu.find('ul li').parents('.mobile_menu ul li').addClass('has-sub-item').prepend('<span class="submenu-button"></span>');
+
+
+        // $menu.find(".has-sub-item");
+
+        $menu.find('.submenu-button').on('click', function () {
+            $(this).toggleClass('submenu-opened');
+            if ($(this).siblings('ul').hasClass('open')) {
+                $(this).siblings('ul').removeClass('open').slideUp('fast');
+            } else {
+                $(this).siblings('ul').addClass('open').slideDown('fast');
+            }
+        });
+    }
+
+    mobileMenu();
+
+    $('#mobile_menu .offcanvas-overlay, #mobile_menu .offcanvas-close').on('click', function() {
+        $('#mobile_menu').removeClass('open');
+    });
+
+    $('#menu-button').on('click', function() {
+        $('#mobile_menu').addClass('open');
+    });
+
+    $('.mobile_menu-button').on('click', function() {
+        $('#mobile_menu').addClass('open');
+    });
+
+    
+
+
+
+    // ADD SLIDEDOWN ANIMATION TO DROPDOWN //
+    $('.flag-dropdown').on('show.bs.dropdown', function (e) {
+        $(this).find('.dropdown-menu').first().stop(true, true).slideDown();
+    });
+
+    // ADD SLIDEUP ANIMATION TO DROPDOWN //
+    $('.flag-dropdown').on('hide.bs.dropdown', function (e) {
+        $(this).find('.dropdown-menu').first().stop(true, true).slideUp();
+    });
+
+
+    //search toggle
+    $('.search-toggle-btn').on('click', function () {
+        $('.full-page-search').addClass('show')
+    });
+    $('.search-close-btn').on('click', function () {
+        $('.full-page-search').removeClass('show')
+    });
+    
+    // Box Shadow Style
+    if ($('.dvpn-box-style').length > 0) {
+        $('.dvpn-box-style').each(function () {
+            if ($(this).find('.elementor-row').length > 0) {
+                $(this).find('.elementor-row').append('<div class="box"></div>')
+            }
+        })
+    }
+
+    //Offcanvas
+    $('.offcanvas-trigger').on('click', function () {
+        $('.offcanvas-wrapper').addClass('active');
+        $('.offcanvas-overlay').addClass('show');
+        $('body').addClass('overflow-hidden');
+    });
+
+    $('.offcanvas-overlay,.offcanvas-close').on('click', function () {
+        $('.offcanvas-overlay').removeClass('show');
+        $('.offcanvas-wrapper').removeClass('active');
+        $('body').removeClass('overflow-hidden');
+    })
+
+    
+
+    //Popup Video
+    if ($(".mfp-iframe, .video-btn").length) {
+        $(".mfp-iframe, .video-btn").magnificPopup({type:"video"});
+    }
+    
+
+    const cookieVars = [
+        {
+            cookieKey: 'referral',
+            queryKey: 'referralID',
+        },
+        {
+            cookieKey: 'friendID',
+            queryKey: 'friendID',
+        },
+        {
+            cookieKey: 'b_click_id',
+            queryKey: 'clickID',
+        },
+        {
+            cookieKey: 'vcomm_id',
+            queryKey: 'vcommID',
+        },
+        {
+            cookieKey: 'myleadID',
+            queryKey: 'myleadID',
+        },
+        {
+            cookieKey: 'vl-cid',
+            queryKey: 'voluum_id',
+        },
+        {
+            cookieKey: 'a_aid',
+            queryKey: 'a_aid',
+        }
+    ];
+
+    // referral link 
+    $('a').on('click', function(e) {
+        if (link_is_external_zoog(this)) {
+            let currentTarget = e.originalEvent.currentTarget.href;
+
+            cookieVars.forEach((v) => {
+                const getC = getCookie(v.cookieKey);
+                if (getC) {
+                    currentTarget = updateQueryStringParameter(currentTarget, v.queryKey, getC)
+                }
+            })
+
+            e.originalEvent.currentTarget.href = currentTarget;
+        }
+        
+    });
+
+    var userDeviceArray = [
+        {device: 'Android', platform: /Android/,
+            link: 'https://play.google.com/store/apps/details?id=com.zoogvpn.android'
+        },
+        {device: 'iPhone', platform: /iPhone/,
+            link: 'https://itunes.apple.com/us/app/zoogvpn/id1204851407?mt=8'
+        },
+        {device: 'iPad', platform: /iPad/,
+            link: 'https://itunes.apple.com/us/app/zoogvpn/id1204851407?mt=8'
+        },
+        {device: 'Symbian', platform: /Symbian/},
+        {device: 'Windows Phone', platform: /Windows Phone/},
+        {device: 'Tablet OS', platform: /Tablet OS/},
+        {device: 'Linux', platform: /Linux/},
+        {device: 'Windows', platform: /Windows NT/,
+            link: '/vpn-downloads/windows/'
+        },
+        {device: 'OSX', platform: /Macintosh/,
+            link: '/vpn-downloads/macos/'
+        }
+    ];
+    
+    var platform = navigator.userAgent;
+    
+    function getPlatform() {
+        for (var i in userDeviceArray) {
+            if (userDeviceArray[i].platform.test(platform)) {
+                return userDeviceArray[i].device;
+            }
+        }
+        return 'Unknown ' + platform;
+    }
+
+   
+    
+    // getPlatform();
+    let knownPlatforms = ["windows", "mac", "linux", "android", "iphone", "blackberry", "firestick", "router", "android-tv"];
+    let matchedPlatform = null;
+    let deviceClasses = $(".devices").attr("class").split(/\s+/);
+    matchedPlatform = deviceClasses.find(cls => knownPlatforms.includes(cls.toLowerCase()));
+
+    if (!matchedPlatform) {
+    matchedPlatform = getPlatform().toLowerCase();
+    }
+
+    let findedDeviceElement = $(".devices").find('a[data-device="' + matchedPlatform + '"]');
+    findedDeviceElement.addClass("active");
+    findedDeviceElement.append(
+    '<span class="selected-device-tooltip">' +
+        findedDeviceElement.attr("title") +
+        "</span>"
+    );
+
+    function link_is_external_zoog(link_element) {
+        return (link_element.host !== window.location.host && link_element.host.includes('.zoogvpn'));
+    }
+
+    function updateQueryStringParameter(uri, key, value) {
+        var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+        var separator = uri.indexOf('?') !== -1 ? "&" : "?";
+        if (uri.match(re)) {
+            return uri.replace(re, '$1' + key + "=" + value + '$2');
+        }
+        else {
+            return uri + separator + key + "=" + value;
+        }
+    }
+
+    function getCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+	
+// 	if ($('.sticky-b').length) {
+//         let $sticky = $('.sticky-b');
+//         console.log($sticky);
+//         $(window).bind('scroll', function() {
+//             $sticky.each(function(index, element ) {
+//                 let top =  $(element).offset().top;
+//                 let end = $('.sticky_block_end').length ? $('.sticky_block_end').offset().top : undefined;
+//                     updateStickyPos(top, end, $(this));
+//             })
+//         });
+// 	}
+	
+	(function() {
+		var $sidebar = $('.sticky-b');
+		if (!$sidebar.length || $sidebar.is(":hidden")) {
+			return false;
+		}
+       // Get & Store the original top of our #sidebar-nav so we can test against it
+       var sidebarTop = $sidebar.offset().top;
+		var contentTop = $('.post-details-cover, .blog-bg').offset().top;
+       // Edit the `- 10` to control when it should disappear when the footer is hit.
+       var blogHeight = $('.post-details-cover, .blog-bg').height() - 10 + contentTop;
+   
+       // Add the function below to the scroll event
+       $(window).scroll(fixSidebarOnScroll);
+   
+       // On window scroll, this fn is called (binded above)
+       function fixSidebarOnScroll() {
+           // Cache our scroll top position (our current scroll position)
+           var windowScrollTop = $(window).scrollTop();
+           let checkBottom = blogHeight - $sidebar.outerHeight();
+            if (windowScrollTop >= checkBottom) {
+                $sidebar.addClass('bottom');
+            } else {
+                $sidebar.removeClass('bottom')
+            }
+           if (windowScrollTop >= blogHeight || windowScrollTop <= sidebarTop || windowScrollTop >= checkBottom) {
+               $sidebar.removeClass('fixed');
+           }
+           else if (windowScrollTop >= sidebarTop) {
+               if (!$sidebar.hasClass('fixed')) {
+                   $sidebar.addClass('fixed');
+               }
+           }
+       }
+	})();
+	
+    
+})(jQuery);
+
+jQuery(document).ready(function(){
+    const queryString = new URLSearchParams(window.location.search);
+    const refParam = queryString.get('ref');
+    if (refParam) {
+        var referralID = refParam;
+        var url = window.location.href;
+
+        jQuery.ajax('https://api-d.zgnet.vip/api/affiliate/session/create', {
+            type: 'POST',
+            data: {url, referralID},
+            success: function (data, status, xhr) {
+                // console.log(status);
+            }
+        })
+    }
+    // if(window.location.search.indexOf('ref') > -1) {
+    //     if(window.location.search.split("ref").length > 1) {
+    //         if(window.location.search.split("ref")[1].split("=").length > 1) {
+    //             var referralID = window.location.search.split("ref")[1].split("=")[1];
+    //             var url = window.location.href;
+
+    //             jQuery.ajax('https://api-d.zgnet.vip/api/affiliate/session/create', {
+    //                 type: 'POST',
+    //                 data: {url, referralID},
+    //                 success: function (data, status, xhr) {
+    //                     // console.log(status);
+    //                 }
+    //             })
+    //         }
+    //     }
+    // }
+    jQuery('.js-refresh').click(function(e) {
+        e.preventDefault();
+        document.location.reload(true);
+    })
+	
+	jQuery(document).click(function(event) { 
+	  var $target = jQuery(event.target);
+	  if(!$target.closest('.cpel-switcher__toggle').length) {
+		  jQuery('.cpel-switcher__toggle').removeClass('cpel-switcher__toggle--on');
+	  }      
+    });
+
+    let AF_SMART_LINK = getCookie('AF_SMART_LINK');
+    if (AF_SMART_LINK) {
+        jQuery('.af_smart_link a').attr('href', AF_SMART_LINK)
+    }
+    setTimeout(function() {
+        if (typeof AF_SMART_SCRIPT_RESULT !== 'undefined' && AF_SMART_SCRIPT_RESULT && AF_SMART_SCRIPT_RESULT.clickURL) {
+            AF_SMART_LINK = AF_SMART_SCRIPT_RESULT.clickURL;
+            setCookie('AF_SMART_LINK', AF_SMART_SCRIPT_RESULT.clickURL, 7)
+            if (AF_SMART_LINK) {
+                jQuery('.af_smart_link a').attr('href', AF_SMART_LINK)
+            }
+        }
+    }, 500)
+    
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for(let i = 0; i <ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+      function setCookie(name,value,days) {
+        var expires = "";
+        const host = location.host;
+        const domainParts = host.split('.');
+        // domainParts.shift();
+        const domain = '.'+domainParts.join('.');
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/; domain="+domain;
+    }
+    let intervalId;
+    const intervalTime = 20;
+    const stopAfter = 5000;
+    let isStopped = false;
+    let falseCount = 0;
+  
+  
+    function updateUrlWithCookies(url) {
+        let urlObj = new URL(url);
+        const fbcValue = getCookie('_fbc');
+        const fbpValue = getCookie('_fbp');
+  
+        if (fbcValue) {
+            
+            urlObj.searchParams.set('af_sub4', fbcValue);
+        }
+        if (fbpValue) {
+            urlObj.searchParams.set('af_sub5', fbpValue);
+        }
+        if (fbpValue || falseCount >= stopAfter / intervalTime) {
+            isStopped = true;
+            clearInterval(intervalId)
+        } else {
+            falseCount++;
+        }
+        return urlObj.toString();
+    }
+  
+    function startInfiniteCheck() {
+        const links = document.querySelectorAll('.af_smart_link_a, .af_smart_link a');
+        intervalId = setInterval(() => {
+            let updatedUrl = updateUrlWithCookies(AF_SMART_SCRIPT_RESULT.clickURL);
+            if (isStopped) {
+                AF_SMART_SCRIPT_RESULT = {clickURL: updatedUrl};
+                setCookie('AF_SMART_LINK', updatedUrl, 7)
+                links.forEach(link => {
+                  link.href = AF_SMART_SCRIPT_RESULT.clickURL;
+                })
+                if (window.isRedirect) window.location.href = updatedUrl;
+            }
+        }, intervalTime);
+    }
+  
+//     startInfiniteCheck();
+})
