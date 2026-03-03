@@ -1,0 +1,34 @@
+jQuery(function($) {
+    
+
+    const timerElement = $('#zoog-timer');
+
+    if (timerElement.length) {
+        createTimer();
+    }
+
+    function createTimer() {
+       
+
+        setInterval(() => {
+            const today = new Date()
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const remainHours = 23 - today.getHours();
+            const remainMinutes = 59 - today.getMinutes();
+            const remainSeconds = 59 - today.getSeconds();
+            const printedTime = ("0" + remainHours).slice(-2) + ":" + ("0" + remainMinutes).slice(-2) + ":" + ("0" + remainSeconds).slice(-2);
+            timerElement.text(printedTime);
+        }, 1000)
+        
+        
+    }
+
+    const is_zoog_vpn = typeof ourIps !== 'undefined' ? ourIps.isZoogIp : 'false';
+    if (is_zoog_vpn == 'true') {
+        Array.from(document.querySelectorAll('.if-no-zoog-ips')).forEach(elem => elem.remove())
+    } else {
+        Array.from(document.querySelectorAll('.if-zoog-ips')).forEach(elem => elem.remove())
+    }
+    
+})

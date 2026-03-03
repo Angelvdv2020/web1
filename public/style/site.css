@@ -1,0 +1,161 @@
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background: #f7f9fc;
+}
+
+a {
+  text-underline-offset: 2px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Keep embedded page stable on mobile */
+@media (max-width: 1024px) {
+  .elementor-section,
+  .elementor-container,
+  .container,
+  .row {
+    max-width: 100% !important;
+  }
+}
+
+/* Hide WordPress admin bar if present in copied markup */
+#wpadminbar {
+  display: none !important;
+}
+
+/* Hide chat-telegram widget completely */
+.teleSupport,
+[class^="teleSupport"],
+[class*=" teleSupport"],
+.teleSupport-bubble,
+.teleSupportButtons {
+  display: none !important;
+}
+
+/* Remove logo blocks/images globally without replacement */
+.logo-canonical,
+.elementor-widget-wp-widget-dvpn_logo_widget,
+.custom-logo-link,
+.site-logo,
+.header-logo,
+.navbar-brand img,
+img[src*="logo" i],
+img[src*="zoog-vpn-logo-dark" i],
+img[src*="noryx-vpn-logo-dark" i],
+img[src*="zoogvpn_favicon" i],
+img[src*="noryxvpn_favicon" i],
+img[src*="favicon.ico" i] {
+  display: none !important;
+}
+
+/* Header fallback: show only top-level menu items, keep submenu inside Products/Features */
+.main_dvpn_header .main-menu-vertical .nav {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  gap: 2px;
+}
+
+.main_dvpn_header .main-menu-vertical .nav > li {
+  list-style: none;
+  position: relative;
+}
+
+.main_dvpn_header .main-menu-vertical .nav > li > a {
+  display: block;
+  white-space: nowrap;
+}
+
+.main_dvpn_header .main-menu-vertical .nav li > .sub-menu {
+  display: none;
+}
+
+.main_dvpn_header .main-menu-vertical .nav > li:hover > .sub-menu {
+  display: block;
+}
+
+.main_dvpn_header .main-menu-vertical .nav > li > .sub-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 240px;
+  margin: 0;
+  padding: 0;
+  z-index: 1000;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.main_dvpn_header .main-menu-vertical .nav > li > .sub-menu > li {
+  list-style: none;
+}
+
+.main_dvpn_header .main-menu-vertical .nav > li > .sub-menu > li > a {
+  padding: 12px 16px;
+}
+
+.main_dvpn_header .main-menu-vertical .nav > li.has-mega-menu > .sub-menu {
+  min-width: 560px;
+  display: none;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 16px 20px;
+}
+
+.main_dvpn_header .main-menu-vertical .nav > li.has-mega-menu:hover > .sub-menu {
+  display: grid;
+}
+
+.main_dvpn_header .main-menu-vertical .nav > li.has-mega-menu > .sub-menu > li > .sub-menu {
+  display: block;
+  position: static;
+  box-shadow: none;
+  background: transparent;
+  min-width: 0;
+}
+
+/* Countries list: 4 items per row on desktop */
+.world-country-flags {
+  width: 100%;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.world-country-flag {
+  width: auto !important;
+  padding: 0 !important;
+}
+
+.world-country-flag-content {
+  min-height: 60px;
+}
+
+@media (max-width: 1200px) {
+  .world-country-flags {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .world-country-flags {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .world-country-flags {
+    grid-template-columns: 1fr;
+  }
+}

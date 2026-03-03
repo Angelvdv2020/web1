@@ -1,0 +1,155 @@
+(function ($) {
+    var userDeviceArray = [
+        {device: 'Android', platform: /Android/,
+            link: downloadScript.android_link
+        },
+        {device: 'iPhone', platform: /iPhone/,
+            link: downloadScript.ios_link
+        },
+        {device: 'iPad', platform: /iPad/,
+            link: downloadScript.ios_link
+        },
+        {device: 'Symbian', platform: /Symbian/},
+        {device: 'Windows Phone', platform: /Windows Phone/},
+        {device: 'Tablet OS', platform: /Tablet OS/},
+        {device: 'Linux', platform: /Linux/},
+        {device: 'Windows', platform: /Windows NT/,
+            link: '/vpn-downloads/windows/'
+        },
+        {device: 'OSX', platform: /Macintosh/,
+            link: '/vpn-downloads/macos/'
+        }
+    ];
+    
+    var platform = navigator.userAgent;
+    
+    function getPlatform() {
+        for (var i in userDeviceArray) {
+            if (userDeviceArray[i].platform.test(platform)) {
+                return userDeviceArray[i].device;
+            }
+        }
+        return 'Unknown ' + platform;
+    }
+
+    function getPlatformObj() {
+        for (var i in userDeviceArray) {
+            if (userDeviceArray[i].platform.test(platform)) {
+                return userDeviceArray[i];
+            }
+        }
+        return null;
+    }
+
+    function getPlatformByName(name) {
+        return userDeviceArray.find(ud => ud.device.toLowerCase() === name.toLowerCase());
+    }
+
+    let platformName = getPlatform();
+    const buttonWrapper = $('.devices-button-wrapper');
+    if (buttonWrapper.length) {
+        const platformObj = getPlatformObj();
+        if (platformName === 'iPad' || platformName === 'iPhone') {
+            let AF_SMART_LINK = getCookie('AF_SMART_LINK');
+            if (typeof AF_SMART_SCRIPT_RESULT !== 'undefined' && AF_SMART_SCRIPT_RESULT && AF_SMART_SCRIPT_RESULT.clickURL) {
+                AF_SMART_LINK = AF_SMART_SCRIPT_RESULT.clickURL;
+                buttonWrapper.append('<a href="'+AF_SMART_LINK+'" class="af_smart_link_a" target="_blank">'+ downloadScript.ios +' </a>');
+            } else if (AF_SMART_LINK) {
+                buttonWrapper.append('<a href="'+AF_SMART_LINK+'" class="af_smart_link_a" target="_blank">'+ downloadScript.ios +' </a>');
+            } else {
+                buttonWrapper.append('<a href="'+platformObj?.link+'" class="af_smart_link_a" target="_blank">'+ downloadScript.ios +' </a>');
+            }
+            // buttonWrapper.append('<a href="'+platformObj?.link+'">'+ downloadScript.ios +' </a>');
+        } else if (platformName === 'Android') {
+            let AF_SMART_LINK = getCookie('AF_SMART_LINK');
+            if (typeof AF_SMART_SCRIPT_RESULT !== 'undefined' && AF_SMART_SCRIPT_RESULT && AF_SMART_SCRIPT_RESULT.clickURL) {
+                AF_SMART_LINK = AF_SMART_SCRIPT_RESULT.clickURL;
+                buttonWrapper.append('<a href="'+AF_SMART_LINK+'" class="af_smart_link_a" target="_blank">'+downloadScript.android+'</a>');
+            } else if (AF_SMART_LINK) {
+                buttonWrapper.append('<a href="'+AF_SMART_LINK+'" class="af_smart_link_a" target="_blank">'+downloadScript.android+'</a>');
+            } else {
+                buttonWrapper.append('<a href="'+platformObj?.link+'" class="af_smart_link_a" target="_blank">'+downloadScript.android+'</a>');
+            }
+        } else if (platformName === 'OSX') {
+            buttonWrapper.append('<a href="'+platformObj?.link+'" target="_blank" rel="nofollow" class="btn">'+ downloadScript.osx +' <i class="icon icon-download2"></i></a>');
+        } else if (platformName === 'Windows') {
+            buttonWrapper.append('<a href="'+platformObj?.link+'" target="_blank" rel="nofollow" class="btn">'+downloadScript.windows+' <i class="icon icon-download2"></i></a>');
+        }
+    }
+
+    const pagelinkButtonWrapper = $('.pagelink-download-button-wrapper');
+    if (pagelinkButtonWrapper.length) {
+        const platformObj = getPlatformObj();
+        if (platformName === 'iPad' || platformName === 'iPhone') {
+            pagelinkButtonWrapper.append('<a href="'+downloadScriptLink.ios+'" class="btn">'+ downloadScript.ios_text +' <i class="icon icon-download2"></i></a>');
+        } else if (platformName === 'Android') {
+            pagelinkButtonWrapper.append('<a href="'+downloadScriptLink.android+'" class="btn">'+downloadScript.android_text+' <i class="icon icon-download2"></i></a>');
+        } else if (platformName === 'OSX') {
+            pagelinkButtonWrapper.append('<a href="'+downloadScriptLink.macos+'" class="btn">'+downloadScript.osx+' <i class="icon icon-download2"></i></a>');
+        } else if (platformName === 'Windows') {
+            pagelinkButtonWrapper.append('<a href="'+downloadScriptLink.windows+'" class="btn">'+downloadScript.windows+' <i class="icon icon-download2"></i></a>');
+        }
+    }
+
+
+
+    const footerButtonWrapper = $('.footer-app-links');
+    if (footerButtonWrapper.length) {
+        const iosPlatform = getPlatformByName('Iphone');
+        const androidPlatform = getPlatformByName('Android');
+
+
+        let AF_SMART_LINK = getCookie('AF_SMART_LINK');
+        if (typeof AF_SMART_SCRIPT_RESULT !== 'undefined' && AF_SMART_SCRIPT_RESULT && AF_SMART_SCRIPT_RESULT.clickURL) {
+            AF_SMART_LINK = AF_SMART_SCRIPT_RESULT.clickURL;
+            footerButtonWrapper.append('<a class="footer-dowloads af_smart_link_a" href="'+AF_SMART_LINK+'" target="_blank">'+ downloadScript.ios +' </a>');
+            footerButtonWrapper.append('<a class="footer-dowloads af_smart_link_a" href="'+AF_SMART_LINK+'" target="_blank">'+ downloadScript.android +' </a>');
+        } else if (AF_SMART_LINK) {
+            footerButtonWrapper.append('<a class="footer-dowloads af_smart_link_a" href="'+AF_SMART_LINK+'" target="_blank">'+ downloadScript.ios +' </a>');
+            footerButtonWrapper.append('<a class="footer-dowloads af_smart_link_a" href="'+AF_SMART_LINK+'" target="_blank">'+ downloadScript.android +' </a>');
+        } else {
+            footerButtonWrapper.append('<a class="footer-dowloads af_smart_link_a" href="'+iosPlatform?.link+'">'+ downloadScript.ios +' </a>');
+            footerButtonWrapper.append('<a class="footer-dowloads af_smart_link_a" href="'+androidPlatform?.link+'">'+ downloadScript.android +' </a>');
+        }
+        
+    }
+
+    setTimeout(() => {
+        if (typeof AF_SMART_SCRIPT_RESULT !== 'undefined' && AF_SMART_SCRIPT_RESULT && AF_SMART_SCRIPT_RESULT.clickURL) {
+            AF_SMART_LINK = AF_SMART_SCRIPT_RESULT.clickURL;
+            setCookie('AF_SMART_LINK', AF_SMART_SCRIPT_RESULT.clickURL, 7)
+            if (AF_SMART_LINK) {
+                jQuery('.af_smart_link_a').attr('href', AF_SMART_LINK)
+            }
+        }
+    }, 500)
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for(let i = 0; i <ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+      function setCookie(name,value,days) {
+        var expires = "";
+        const host = location.host;
+        const domainParts = host.split('.');
+        // domainParts.shift();
+        const domain = '.'+domainParts.join('.');
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/; domain="+domain;
+    }
+})(jQuery)

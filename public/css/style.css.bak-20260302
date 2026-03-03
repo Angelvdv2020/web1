@@ -1,0 +1,333 @@
+:root {
+  --bg: #ffffff;
+  --text: #1b1b1b;
+  --text-muted: #6f7783;
+  --line: #e9e9ec;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Manrope', sans-serif;
+}
+
+.container {
+  width: min(1140px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.site-header {
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+}
+
+.header-inner {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.nav-text-btn {
+  border: 0;
+  background: transparent;
+  padding: 6px 0;
+  color: #2a2a2a;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.nav-text-btn:hover {
+  color: #000;
+}
+
+.nav-text-btn.is-active {
+  color: #000;
+}
+
+.home-vpn-block {
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  background-color: transparent;
+  background-image: linear-gradient(67deg, #00d7ff 0%, #141d00 100%);
+}
+
+.home-vpn-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("https://zgproxy.org/wp-content/uploads/2021/11/digital-globe.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.5;
+}
+
+.hero-shell {
+  position: relative;
+  z-index: 1;
+  min-height: auto;
+  display: block;
+  padding: 36px 0 38px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  justify-items: center;
+}
+
+.hero-copy {
+  padding: 0 15px;
+  font-family: 'Rubik', sans-serif;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero-copy h1 {
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-size: 42px;
+  font-weight: 600;
+  line-height: 48px;
+  letter-spacing: -2.52px;
+}
+
+.hero-copy-body {
+  margin: 0 auto 20px;
+  padding: 0 0 0 16px;
+  border-left: 2px solid #00d7ff;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.4em;
+  max-width: 700px;
+  text-align: left;
+}
+
+.hero-copy-body p {
+  margin: 0 0 8px;
+}
+
+.hero-feature {
+  position: relative;
+  padding-left: 18px;
+  margin-top: 4px;
+}
+
+.hero-feature::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #79aa00;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  color: #ffffff;
+  text-decoration: none;
+  font-family: 'Rubik', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-image: linear-gradient(180deg, #79aa00 0%, #79aa00 100%);
+}
+
+.hero-download {
+  margin-top: 8px;
+  text-align: center;
+  font-family: 'Rubik', sans-serif;
+}
+
+.hero-download p {
+  margin: 0;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.platform-list {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+}
+
+.platform-pill {
+  margin: 10px;
+  background: #111a28;
+  border: 2px solid #0a3b54;
+  min-width: 102px;
+  border-radius: 40px;
+  padding: 10px 15px;
+  color: #ffffff;
+  text-decoration: none;
+  font-family: 'Rubik', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14px;
+  text-align: center;
+}
+
+.platform-pill:hover,
+.platform-pill.is-active {
+  color: #79aa00;
+}
+
+.page-shell {
+  padding: 44px 0;
+}
+
+.page-shell h1 {
+  margin: 0;
+  font-size: clamp(28px, 3.8vw, 40px);
+}
+
+.page-shell p {
+  margin-top: 12px;
+  color: var(--text-muted);
+  max-width: 62ch;
+}
+
+.error-stack {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #f0c3c3;
+  border-radius: 8px;
+  background: #fff2f2;
+  color: #7a1b1b;
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1024px) {
+  .hero-shell {
+    min-height: auto;
+  }
+
+  .hero-copy h1 {
+    font-size: 34px;
+    line-height: 38px;
+    letter-spacing: -1px;
+  }
+
+  .hero-copy-body {
+    font-size: 13px;
+  }
+
+  .platform-pill {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 760px) {
+  .container {
+    width: calc(100% - 22px);
+  }
+
+  .header-inner {
+    min-height: 48px;
+  }
+
+  .header-nav {
+    justify-content: flex-start;
+    gap: 14px;
+  }
+
+  .nav-text-btn {
+    font-size: 11px;
+  }
+
+  .hero-shell {
+    min-height: auto;
+    padding: 32px 0 22px;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-side {
+    display: none;
+  }
+
+  .hero-copy {
+    padding: 0;
+  }
+
+  .hero-copy h1 {
+    font-size: 26px;
+    line-height: 1.08;
+    letter-spacing: -0.8px;
+  }
+
+  .hero-copy-body {
+    margin-bottom: 16px;
+    padding-left: 12px;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .hero-cta {
+    min-height: 44px;
+    padding: 12px 16px;
+    font-size: 11px;
+  }
+
+  .hero-download {
+    margin-top: 20px;
+  }
+
+  .hero-download p {
+    font-size: 13px;
+  }
+
+  .platform-list {
+    margin-top: 10px;
+  }
+
+  .platform-pill {
+    margin: 6px;
+    min-width: 90px;
+    padding: 8px 10px;
+    font-size: 11px;
+    line-height: 14px;
+  }
+}

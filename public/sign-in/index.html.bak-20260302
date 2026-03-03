@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NoryxVPN - Вход</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css?v=20260302-pc7">
+  <style>
+    .signin-wrap { padding: 44px 0; }
+    .signin-card {
+      max-width: 520px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #d9e4f5;
+      border-radius: 18px;
+      box-shadow: 0 18px 42px rgba(15, 40, 80, 0.1);
+      padding: 30px;
+      text-align: center;
+    }
+    .signin-logo {
+      width: min(290px, 82%);
+      margin: 0 auto 14px;
+      height: auto;
+    }
+    .signin-title {
+      margin: 0;
+      font-family: 'Rubik', sans-serif;
+      font-size: 30px;
+      color: #10203e;
+    }
+    .signin-text {
+      margin: 12px 0 0;
+      color: #5f6f89;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .signin-actions {
+      margin-top: 22px;
+      display: grid;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner" style="justify-content:center;min-height:68px;">
+      <a href="/" aria-label="NoryxVPN">
+        <img src="/images/noryx-support-logo.webp" alt="NoryxVPN" style="width:230px;height:auto;display:block;">
+      </a>
+    </div>
+  </header>
+
+  <main class="signin-wrap container">
+    <section class="signin-card">
+      <img class="signin-logo" src="/images/noryx-support-logo.webp" alt="NoryxVPN">
+      <h1 class="signin-title">Вход в NoryxVPN</h1>
+      <p class="signin-text">Страница входа обновлена для домена noryxvpn.store.</p>
+      <div class="signin-actions">
+        <a href="/my-account/" class="btn btn-solid">Мой аккаунт</a>
+        <a href="/" class="btn btn-primary">Регистрация</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

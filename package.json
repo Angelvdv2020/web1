@@ -1,0 +1,18 @@
+{
+  "name": "noryx-web1",
+  "version": "1.0.0",
+  "description": "Noryx multi-page website skeleton",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.0"
+  }
+}

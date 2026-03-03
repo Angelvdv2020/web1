@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NoryxVPN - My Account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css?v=20260302-pc6">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <nav class="header-nav" aria-label="Основная навигация">
+        <a class="nav-text-btn" href="/products/">Products</a>
+        <a class="nav-text-btn" href="/features/">Features</a>
+        <a class="nav-text-btn" href="/pricing/">Pricing</a>
+        <a class="nav-text-btn" href="/locations/">Locations</a>
+        <a class="nav-text-btn" href="/contact/">Contact</a>
+        <a class="nav-text-btn" href="https://www.noryxvpn.store/sign-in">My Account</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-shell container">
+    <h1>My Account</h1>
+    <p>Отдельная HTML-страница My Account для дальнейшего редактирования.</p>
+  </main>
+</body>
+</html>
