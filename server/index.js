@@ -5,15 +5,36 @@ const express = require('express');
 
 const app = express();
 app.disable('etag');
-const PORT = 3002;
+const PORT = Number(process.env.PORT) || 3002;
 
 const publicDir = path.join(__dirname, '..', 'public');
 const htmlPath = path.join(publicDir, 'reference-home.html');
+const referenceAuthTemplatePathPreferred = path.join(__dirname, '..', '123', 'Главная страница', 'reference-home.html');
+const referenceAuthTemplatePath = fs.existsSync(referenceAuthTemplatePathPreferred)
+  ? referenceAuthTemplatePathPreferred
+  : htmlPath;
 const preferredAssetsDir = path.join(__dirname, '..', '123', 'карта мира_files');
 const assetsDir = fs.existsSync(preferredAssetsDir)
   ? preferredAssetsDir
   : path.join(publicDir, 'карта мира_files');
 const noCacheFileOptions = { etag: false, lastModified: false, cacheControl: false };
+const staticMaxAgeMs = Number(process.env.STATIC_MAX_AGE_MS) || 7 * 24 * 60 * 60 * 1000;
+
+const setNoCacheHeaders = (res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+};
+
+const setStaticCacheHeaders = (res, filePath) => {
+  if (/\.html?$/i.test(filePath)) {
+    setNoCacheHeaders(res);
+    return;
+  }
+
+  res.setHeader('Cache-Control', `public, max-age=${Math.floor(staticMaxAgeMs / 1000)}, immutable`);
+};
 
 const safeDecode = (value) => {
   try {
@@ -26,12 +47,27 @@ const safeDecode = (value) => {
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const assetExtRegex = /\.(css|js|png|jpe?g|webp|gif|svg|ico|woff2?|ttf|eot|otf)(?:[?#].*)?$/i;
 
-const assetFileNames = fs.existsSync(assetsDir)
-  ? fs.readdirSync(assetsDir).filter((name) => {
-      const abs = path.join(assetsDir, name);
-      return fs.existsSync(abs) && fs.statSync(abs).isFile();
-    })
-  : [];
+const collectAssetPaths = (rootDir, relativeDir = '') => {
+  const absoluteDir = path.join(rootDir, relativeDir);
+  if (!fs.existsSync(absoluteDir)) {
+    return [];
+  }
+
+  const entries = fs.readdirSync(absoluteDir, { withFileTypes: true });
+  const results = [];
+  for (const entry of entries) {
+    const nextRelative = relativeDir ? path.posix.join(relativeDir, entry.name) : entry.name;
+    if (entry.isDirectory()) {
+      results.push(...collectAssetPaths(rootDir, nextRelative));
+      continue;
+    }
+    results.push(nextRelative);
+  }
+
+  return results;
+};
+
+const assetFileNames = fs.existsSync(assetsDir) ? collectAssetPaths(assetsDir) : [];
 const assetNameSet = new Set(assetFileNames);
 const normalizedAssetMap = new Map();
 
@@ -99,7 +135,8 @@ const resolveAssetFileName = (requestedPath) => {
   const cleanPath = requestedPath.split('?')[0].split('#')[0];
   const decodedPath = safeDecode(cleanPath);
   const normalizedRequestedPath = decodedPath.replace(/\/+/g, '/').toLowerCase();
-  const baseName = path.basename(decodedPath);
+  const normalizedRequestPath = decodedPath.replace(/^\/+/, '').replace(/\\/g, '/');
+  const baseName = path.basename(normalizedRequestPath);
 
   // Path-specific overrides for ambiguous "style.css" files from WordPress exports.
   const pathOverrides = [
@@ -117,6 +154,11 @@ const resolveAssetFileName = (requestedPath) => {
 
   if (!assetExtRegex.test(baseName)) {
     return null;
+  }
+
+
+  if (assetNameSet.has(normalizedRequestPath)) {
+    return normalizedRequestPath;
   }
 
   for (const candidate of buildAssetNameCandidates(baseName)) {
@@ -217,6 +259,34 @@ const domainSwapPairs = [
   ['https://zgproxy.org/contact/', 'https://noryxvpn.store/contact/'],
 ];
 
+
+const ruTextReplacements = [
+  ['Pricing', 'Цены'],
+  ['Features', 'Возможности'],
+  ['Locations', 'Локации'],
+  ['Contact', 'Контакты'],
+  ['My account', 'Мой аккаунт'],
+  ['Sign in', 'Вход'],
+  ['Sign up', 'Регистрация'],
+  ['Register', 'Регистрация'],
+  ['Help Center', 'Центр помощи'],
+  ['Privacy Policy', 'Политика конфиденциальности'],
+  ['Terms of Service', 'Условия использования'],
+  ['Refund Policy', 'Политика возврата'],
+  ['Blog', 'Блог'],
+  ['FAQ', 'Вопросы и ответы'],
+  ['Download', 'Скачать'],
+  ['Get started', 'Начать'],
+];
+
+const replaceCommonTextToRussian = (input) => {
+  let out = input;
+  for (const [from, to] of ruTextReplacements) {
+    out = out.replace(new RegExp(escapeRegex(from), 'g'), to);
+  }
+  return out;
+};
+
 const replaceConfiguredDomainLinks = (input) => {
   let out = input;
 
@@ -235,6 +305,7 @@ const replaceConfiguredDomainLinks = (input) => {
 
 const localizeHtml = (html) => {
   let out = replaceConfiguredDomainLinks(html);
+  out = replaceCommonTextToRussian(out);
 
   // Domain replacements.
   out = out
@@ -242,17 +313,21 @@ const localizeHtml = (html) => {
     .replace(/https?:\/\/zgproxy\.org/gi, 'https://noryxvpn.store')
     .replace(/https?:\/\/app\.zoogvpn\.com/gi, 'https://app.noryxvpn.store')
     .replace(/https?:\/\/zoogvpn\.com/gi, 'https://noryxvpn.store')
+    .replace(/https?:\/\/(?:www\.)?zoogvpn\.net/gi, 'https://noryxvpn.store')
     .replace(/https?:\/\/zgnet\.vip/gi, 'https://noryxvpn.store')
-    .replace(/https:\\\/\\\/app\.zgproxy\.org/gi, 'https:\\/\\/app.noryxvpn.store')
-    .replace(/https:\\\/\\\/zgproxy\.org/gi, 'https:\\/\\/noryxvpn.store')
-    .replace(/https:\\\/\\\/app\.zoogvpn\.com/gi, 'https:\\/\\/app.noryxvpn.store')
-    .replace(/https:\\\/\\\/zoogvpn\.com/gi, 'https:\\/\\/noryxvpn.store')
-    .replace(/https:\\\/\\\/zgnet\.vip/gi, 'https:\\/\\/noryxvpn.store');
+    .replace(/\/\/zgproxy\.org/gi, '//noryxvpn.store')
+    .replace(/\/\/zoogvpn\.com/gi, '//noryxvpn.store')
+    .replace(/zgproxy\.org/gi, 'noryxvpn.store')
+    .replace(/zoogvpn\.com/gi, 'noryxvpn.store')
+    .replace(/zoogvpn\.net/gi, 'noryxvpn.store')
+    .replace(/zgnet\.vip/gi, 'noryxvpn.store')
+    .replace(/https%3A%2F%2Fzgproxy\.org/gi, 'https%3A%2F%2Fnoryxvpn.store')
+    .replace(/https%3A%2F%2Fzoogvpn\.com/gi, 'https%3A%2F%2Fnoryxvpn.store');
 
   // Force external wp-content/wp-includes assets to local files.
   out = out
     .replace(
-      /https?:\/\/(?:www\.)?(?:app\.noryxvpn\.store|noryxvpn\.store|app\.zgproxy\.org|zgproxy\.org|app\.zoogvpn\.com|zoogvpn\.com|zgnet\.vip)\/[^"'<>\\\s)]+/gi,
+      /https?:\/\/(?:www\.)?(?:app\.noryxvpn\.store|noryxvpn\.store|app\.zgproxy\.org|zgproxy\.org|app\.zoogvpn\.com|zoogvpn\.com|(?:www\.)?zoogvpn\.net|zgnet\.vip)\/[^"'<>\\\s)]+/gi,
       (urlValue) => rewriteAssetUrlToLocal(urlValue),
     )
     .replace(/\/(?:wp-content|wp-includes)\/[^"'<>\\\s)]+/gi, (urlValue) => rewriteAssetUrlToLocal(urlValue));
@@ -264,6 +339,13 @@ const localizeHtml = (html) => {
     .replace(/zoogvpn/g, 'noryxvpn')
     .replace(/Zoog/g, 'Noryx')
     .replace(/zoog/g, 'noryx');
+
+  // Keep only Russian locale UI signals and force ru language markers.
+  out = out
+    .replace(/<html([^>]*?)\slang=["'][^"']*["']([^>]*)>/i, '<html$1 lang="ru"$2>')
+    .replace(/<link[^>]+hreflang=["'](?!ru|ru-ru)[^"']+["'][^>]*>/gi, '')
+    .replace(/<a[^>]*href=["'][^"']*[?&]lang=(?!ru)[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, '')
+    .replace(/<option[^>]+value=["'](?!ru)[^"']+["'][^>]*>[\s\S]*?<\/option>/gi, '');
 
   // Remove logo/favicons everywhere without replacement.
   out = out
@@ -302,6 +384,14 @@ const localizeHtml = (html) => {
     .replace(/<script[^>]*chat-telegram\/assets\/js\/moment-timezone-with-data\.min\.js[^>]*><\/script>/gi, '')
     .replace(/<script[^>]*chat-telegram\/assets\/js\/cts-main\.js[^>]*><\/script>/gi, '');
 
+
+  // Remove download/contact buttons and related blocks by request.
+  out = out
+    .replace(/<a[^>]*(?:download|app\s*store|play\s*store|google\s*play|vpn-for-(?:windows|mac|ios|android|linux|router)|contact)[^>]*>[\s\S]*?<\/a>/gi, '')
+    .replace(/<button[^>]*(?:download|app\s*store|play\s*store|google\s*play|contact)[^>]*>[\s\S]*?<\/button>/gi, '')
+    .replace(/<section[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/section>/gi, '')
+    .replace(/<div[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/div>/gi, '');
+
   // Remove only third-party injected widget scripts.
   out = out
     .replace(/<script[^>]*data-site-id="1802"[^>]*><\/script>/gi, '')
@@ -329,28 +419,44 @@ const getLocalizedHtml = (relativePath) => {
   return localizeHtml(raw);
 };
 
-const sendLocalizedFile = (res, relativePath) => {
-  const html = getLocalizedHtml(relativePath);
+const getBrandedReferenceHtml = () => {
+  if (!fs.existsSync(referenceAuthTemplatePath)) {
+    return null;
+  }
+
+  const raw = fs.readFileSync(referenceAuthTemplatePath, 'utf8');
+  return localizeHtml(raw);
+};
+
+const sendBrandedReferencePage = (res) => {
+  const html = getBrandedReferenceHtml();
   if (!html) {
+    setNoCacheHeaders(res);
     res.status(404).type('text/plain').send('Not Found');
     return;
   }
+
+  setNoCacheHeaders(res);
   res.type('html').send(html);
 };
 
-app.use((req, res, next) => {
-  // Force fully uncached behavior for all responses.
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  res.setHeader('Surrogate-Control', 'no-store');
-  next();
+const sendLocalizedFile = (res, relativePath) => {
+  const html = getLocalizedHtml(relativePath);
+  if (!html) {
+    setNoCacheHeaders(res);
+    res.status(404).type('text/plain').send('Not Found');
+    return;
+  }
+  setNoCacheHeaders(res);
+  res.type('html').send(html);
+};
+
+app.get('/healthz', (_req, res) => {
+  res.status(200).json({ ok: true });
 });
 
-app.use(express.static(publicDir, { etag: false, lastModified: false, maxAge: 0, immutable: false }));
-app.use('/карта мира_files', express.static(assetsDir, { etag: false, lastModified: false, maxAge: 0, immutable: false }));
-
 app.get('/favicon.ico', (_req, res) => {
+  setNoCacheHeaders(res);
   res.status(204).end();
 });
 
@@ -364,7 +470,7 @@ app.get('*', (req, res, next) => {
   const resolvedFileName = resolveAssetFileName(fileName) || resolveAssetFileName(req.path);
   if (resolvedFileName) {
     const candidate = path.join(assetsDir, resolvedFileName);
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    setStaticCacheHeaders(res, resolvedFileName);
     return res.sendFile(candidate, noCacheFileOptions);
   }
 
@@ -381,11 +487,6 @@ const pageRoutes = {
   '/pricing': 'pages/pricing.html',
   '/locations': 'pages/locations.html',
   '/network': 'pages/locations.html',
-  '/contact': 'pages/contact.html',
-  '/my-account': 'pages/my-account.html',
-  '/sign-in': 'pages/sign-in.html',
-  '/sign-up': 'pages/sign-up.html',
-  '/register': 'pages/sign-up.html',
 
   '/vpn-for-windows': 'pages/vpn-for-windows.html',
   '/products/vpn-for-windows': 'pages/vpn-for-windows.html',
@@ -435,8 +536,48 @@ Object.entries(pageRoutes).forEach(([route, filePath]) => {
   registerPageRoute(route, filePath);
 });
 
+const specialBrandedRoutes = [
+  '/my-account',
+  '/my-account/',
+  '/sign-in',
+  '/sign-in/',
+  '/sign-up',
+  '/sign-up/',
+  '/register',
+  '/register/',
+  '/payment-step-3',
+  '/payment-step-3/',
+  '/checkout-step-3',
+  '/checkout-step-3/',
+];
+
+app.get(specialBrandedRoutes, (_req, res) => {
+  sendBrandedReferencePage(res);
+});
+
+app.use(
+  express.static(publicDir, {
+    etag: false,
+    lastModified: false,
+    maxAge: staticMaxAgeMs,
+    immutable: true,
+    setHeaders: setStaticCacheHeaders,
+  }),
+);
+app.use(
+  '/карта мира_files',
+  express.static(assetsDir, {
+    etag: false,
+    lastModified: false,
+    maxAge: staticMaxAgeMs,
+    immutable: true,
+    setHeaders: setStaticCacheHeaders,
+  }),
+);
+
 // Return explicit 404 for unknown routes instead of rendering home page everywhere.
 app.get('*', (_req, res) => {
+  setNoCacheHeaders(res);
   res.status(404).type('text/plain').send('Not Found');
 });
 
