@@ -397,6 +397,14 @@ const localizeHtml = (html) => {
     .replace(/<section[^>]*(?:download)[^>]*>[\s\S]*?<\/section>/gi, '')
     .replace(/<div[^>]*(?:download)[^>]*>[\s\S]*?<\/div>/gi, '');
 
+  // Remove download/contact buttons and related blocks by request.
+  out = out
+    .replace(/<a[^>]*(?:download|app\s*store|play\s*store|google\s*play|vpn-for-(?:windows|mac|ios|android|linux|router)|contact)[^>]*>[\s\S]*?<\/a>/gi, '')
+    .replace(/<button[^>]*(?:download|app\s*store|play\s*store|google\s*play|contact)[^>]*>[\s\S]*?<\/button>/gi, '')
+    .replace(/<section[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/section>/gi, '')
+    .replace(/<div[^>]*(?:download|contact)[^>]*>[\s\S]*?<\/div>/gi, '');
+ 
+
   // Remove only third-party injected widget scripts.
   out = out
     .replace(/<script[^>]*data-site-id="1802"[^>]*><\/script>/gi, '')
@@ -492,7 +500,15 @@ const pageRoutes = {
   '/pricing': 'pages/pricing.html',
   '/locations': 'pages/locations.html',
   '/network': 'pages/locations.html',
+
   '/contact': 'pages/contact.html',
+
+  '/my-account': 'pages/my-account.html',
+  '/sign-in': 'pages/sign-in.html',
+  '/sign-up': 'pages/sign-up.html',
+  '/register': 'pages/sign-up.html',
+  '/payment-step-3': 'pages/payment-step-3.html',
+  '/checkout-step-3': 'pages/payment-step-3.html',
 
   '/vpn-for-windows': 'pages/vpn-for-windows.html',
   '/products/vpn-for-windows': 'pages/vpn-for-windows.html',
