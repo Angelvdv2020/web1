@@ -1,0 +1,55 @@
+name: smoke
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke-routes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start server
+        run: |
+          PORT=3002 npm run start > server.log 2>&1 &
+          echo $! > server.pid
+
+      - name: Wait for healthcheck
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3002/healthz >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not become healthy in time"
+          cat server.log || true
+          exit 1
+
+      - name: Smoke check routes
+        run: |
+          curl -fsS -o /dev/null http://127.0.0.1:3002/
+          curl -fsS -o /dev/null http://127.0.0.1:3002/pricing
+          curl -fsS -o /dev/null http://127.0.0.1:3002/sign-in
+          curl -fsS -o /dev/null http://127.0.0.1:3002/sign-up
+          curl -fsS -o /dev/null http://127.0.0.1:3002/register
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill "$(cat server.pid)" || true
+          fi
