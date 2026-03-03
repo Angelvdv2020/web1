@@ -488,6 +488,14 @@ const pageRoutes = {
   '/locations': 'pages/locations.html',
   '/network': 'pages/locations.html',
 
+  '/contact': 'pages/contact.html',
+  '/my-account': 'pages/my-account.html',
+  '/sign-in': 'pages/sign-in.html',
+  '/sign-up': 'pages/sign-up.html',
+  '/register': 'pages/sign-up.html',
+  '/payment-step-3': 'pages/payment-step-3.html',
+  '/checkout-step-3': 'pages/payment-step-3.html',
+
   '/vpn-for-windows': 'pages/vpn-for-windows.html',
   '/products/vpn-for-windows': 'pages/vpn-for-windows.html',
   '/vpn-for-mac': 'pages/vpn-for-mac.html',
@@ -554,6 +562,7 @@ const specialBrandedRoutes = [
 app.get(specialBrandedRoutes, (_req, res) => {
   sendBrandedReferencePage(res);
 });
+
 
 app.use(
   express.static(publicDir, {
